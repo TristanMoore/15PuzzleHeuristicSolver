@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace _15PuzzleHeuristicSolver
@@ -13,17 +14,20 @@ namespace _15PuzzleHeuristicSolver
         }
     }
 
-    internal class Puzzle
+    public class Puzzle
     {
         public const int BOARD_SIZE = 16;
         public const int BOARD_WIDTH = 4;
         public const int BLANKVAL = -1;
+        private const int CHANGED_FLAG = -42;
         private static readonly int[] GOAL_STATE = new int[BOARD_SIZE] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, BLANKVAL };
         private int[] tileSet;
 
+        public enum Operators { Up, Down, Left, Right };
+
         public Puzzle(int[] board)
         {
-            if (!IsValid(board))
+            if (!BoardIsValidAndSolvable(board))
             {
                 tileSet = GOAL_STATE;
                 throw new Exception("ERROR, invalid board passed.");
@@ -31,23 +35,99 @@ namespace _15PuzzleHeuristicSolver
             tileSet = board;
         }
 
-        public int BlankPos
+        public List<Operators> ValidOperators
         {
             get
             {
-                return FindBlankIndex(tileSet);
+                return Enum.GetValues(typeof(Operators)).Cast<Operators>().Where(op => OperatorIsValid(op)).ToList();
             }
         }
+
+        private bool OperatorIsValid(Operators op)
+        {
+            switch (op)
+            {
+                case Operators.Up:
+                    return BlankIndex > 3;
+
+                case Operators.Down:
+                    return BlankIndex < 12;
+
+                case Operators.Left:
+                    return BlankIndex % BOARD_WIDTH != 0;
+
+                case Operators.Right:
+                    return BlankIndex % BOARD_WIDTH != 3;
+
+                default:
+                    return false;
+            }
+        }
+
+        public void DoOperator(Operators op)
+        {
+            if (!OperatorIsValid(op))
+            {
+                throw new Exception("ERROR, Attempted to perform invalid operator.");
+            }
+
+            int tmpIndex = BlankIndex;
+            switch (op)
+            {
+                case Operators.Up:
+                    tileSet[tmpIndex] = tileSet[tmpIndex - 4];
+                    tileSet[tmpIndex - 4] = BLANKVAL;
+                    break;
+
+                case Operators.Down:
+                    tileSet[tmpIndex] = tileSet[tmpIndex + 4];
+                    tileSet[tmpIndex + 4] = BLANKVAL;
+                    break;
+
+                case Operators.Left:
+                    tileSet[tmpIndex] = tileSet[tmpIndex - 1];
+                    tileSet[tmpIndex - 1] = BLANKVAL;
+                    break;
+
+                case Operators.Right:
+                    tileSet[tmpIndex] = tileSet[tmpIndex + 1];
+                    tileSet[tmpIndex + 1] = BLANKVAL;
+                    break;
+            }
+
+            buffBlankIndex = CHANGED_FLAG;
+            buffInversionCount = CHANGED_FLAG;
+        }
+
+        private int buffBlankIndex = CHANGED_FLAG;
+
+        public int BlankIndex
+        {
+            get
+            {
+                if (buffBlankIndex == CHANGED_FLAG)
+                {
+                    buffBlankIndex = FindBlankIndex(tileSet);
+                }
+                return buffBlankIndex;
+            }
+        }
+
+        private int buffInversionCount = CHANGED_FLAG;
 
         public int InversionCount
         {
             get
             {
-                return FindInversionCountInArray(tileSet);
+                if (buffInversionCount == CHANGED_FLAG)
+                {
+                    buffInversionCount = FindInversionCountInArray(tileSet);
+                }
+                return buffInversionCount;
             }
         }
 
-        private static bool IsValid(int[] boardArr)
+        private static bool BoardIsValidAndSolvable(int[] boardArr)
         {
             if (boardArr.Length != BOARD_SIZE)
             {
