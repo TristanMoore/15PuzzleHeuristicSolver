@@ -2,15 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace _15PuzzleHeuristicSolver
 {
     public class NPuzzle
     {
+        //useful objects
         public readonly Node initialState;
+
         public readonly Node goalState; //starting at 1
         public const int BLANKVAL = -1;
+        public List<Node> solution;
+
+        //informational objects
+        private Stopwatch calcStopwatch = new Stopwatch();
+
+        private int openCount = 0;
+        private int closeCount = 0;
 
         public enum Operator { Root, Up, Down, Left, Right };
 
@@ -31,6 +40,11 @@ namespace _15PuzzleHeuristicSolver
             List<Node> open = new List<Node>();
             List<Node> close = new List<Node>();
             Node best;
+
+            //0. start the timer
+            calcStopwatch.Reset();
+            calcStopwatch.Start();
+
             //1. put IS on open
             open.Add(initialState);
 
@@ -39,6 +53,9 @@ namespace _15PuzzleHeuristicSolver
                 //2. if open is empty, fail
                 if (!open.Any())
                 {
+                    openCount = open.Count();
+                    closeCount = close.Count();
+                    calcStopwatch.Stop();
                     return null;
                 }
 
@@ -61,7 +78,11 @@ namespace _15PuzzleHeuristicSolver
                     if (successor.Equals(goalState))
                     {
                         //4. if successor is goal, output solution
-                        return GenerateSolutionPath(close, successor);
+                        openCount = open.Count();
+                        closeCount = close.Count();
+                        solution = GenerateSolutionPath(close, successor);
+                        calcStopwatch.Stop();
+                        return solution;
                     }
 
                     Node duplicateClose = close.FirstOrDefault(n => successor.Equals(n));
@@ -79,6 +100,21 @@ namespace _15PuzzleHeuristicSolver
                         }
                     }
                 }
+            }
+        }
+
+        public void PrintSolution()
+        {
+            Console.WriteLine("\n");
+            Console.WriteLine("Calculation Time: {0}", calcStopwatch.Elapsed);
+            Console.WriteLine("Open Count: {0}", openCount);
+            Console.WriteLine("Close Count: {0}", closeCount);
+            Console.WriteLine("Total Nodes Generated: {0}", openCount + closeCount);
+            Console.WriteLine("Length of Solution Path: {0}", solution.Count());
+            Console.WriteLine("Solution:");
+            foreach (Node n in solution)
+            {
+                PrintNode(n);
             }
         }
 
@@ -123,6 +159,7 @@ namespace _15PuzzleHeuristicSolver
                 n.appliedOp = ReverseOperator(n.appliedOp);
             }
             solution.Reverse();
+
             return solution;
         }
 
