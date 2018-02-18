@@ -21,11 +21,9 @@ namespace _15PuzzleHeuristicSolver
 
             puzz1.SolveWithBestFirst();
             puzz1.PrintSolution();
-            Console.WriteLine("Finding 'Best' Time: {0}", puzz1.debugStopwatch.Elapsed);
 
             puzz2.SolveWithBestFirst();
             puzz2.PrintSolution();
-            Console.WriteLine("Finding 'Best' Time: {0}", puzz2.debugStopwatch.Elapsed);
 
             puzz3.SolveWithBestFirst();
             puzz3.PrintSolution();
