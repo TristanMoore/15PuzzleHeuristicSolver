@@ -9,10 +9,10 @@ namespace _15PuzzleHeuristicSolver
     public class NPuzzle
     {
         //useful objects
-        public readonly Node initialState;
+        public const int BLANKVAL = -1;
 
         public readonly Node goalState; //starting at 1
-        public const int BLANKVAL = -1;
+        public readonly Node initialState;
         public List<Node> solution;
 
         //informational objects
@@ -37,9 +37,12 @@ namespace _15PuzzleHeuristicSolver
 
         public List<Node> SolveWithBestFirst()
         {
+            Dictionary<Node, int> openHash = new Dictionary<Node, int>();
+            HashSet<Node> closeHash = new HashSet<Node>();
             List<Node> open = new List<Node>();
-            List<Node> close = new List<Node>();
+            //List<Node> close = new List<Node>();
             Node best;
+            int bestIndex;
 
             //0. start the timer
             calcStopwatch.Reset();
@@ -47,6 +50,7 @@ namespace _15PuzzleHeuristicSolver
 
             //1. put IS on open
             open.Add(initialState);
+            openHash.Add(initialState, initialState.HVal);
 
             while (true)
             {
@@ -54,22 +58,25 @@ namespace _15PuzzleHeuristicSolver
                 if (!open.Any())
                 {
                     openCount = open.Count();
-                    closeCount = close.Count();
+                    closeCount = closeHash.Count();
                     calcStopwatch.Stop();
                     return null;
                 }
 
                 //pick out best from open and put on close
                 best = open.First();
-                foreach (Node n in open)
+                bestIndex = 0;
+                for (int i = 0; i < open.Count(); i++)
                 {
-                    if (n.HVal < best.HVal)
+                    if (open[i].HVal < best.HVal)
                     {
-                        best = n;
+                        best = open[i];
+                        bestIndex = i;
                     }
                 }
-                open.Remove(best);
-                close.Add(best);
+                openHash.Remove(best);
+                open.RemoveAt(bestIndex);
+                closeHash.Add(best);
 
                 //3. expand n
                 foreach (Operator op in GetValidOperators(best))
@@ -79,25 +86,16 @@ namespace _15PuzzleHeuristicSolver
                     {
                         //4. if successor is goal, output solution
                         openCount = open.Count();
-                        closeCount = close.Count();
-                        solution = GenerateSolutionPath(close, successor);
+                        closeCount = closeHash.Count();
+                        solution = GenerateSolutionPath(closeHash.ToList(), successor);
                         calcStopwatch.Stop();
                         return solution;
                     }
 
-                    Node duplicateClose = close.FirstOrDefault(n => successor.Equals(n));
-                    if (duplicateClose == null)
+                    if (!closeHash.Contains(successor) && !openHash.ContainsKey(successor))
                     {
-                        Node duplicateOpen = open.FirstOrDefault(n => successor.Equals(n));
-                        if (duplicateOpen == null)
-                        {
-                            open.Add(successor);
-                        }
-                        else if (duplicateOpen.HVal > successor.HVal)
-                        {
-                            open.Remove(duplicateOpen);
-                            open.Add(successor);
-                        }
+                        open.Add(successor);
+                        openHash.Add(successor, successor.HVal);
                     }
                 }
             }
@@ -138,7 +136,7 @@ namespace _15PuzzleHeuristicSolver
             Console.WriteLine(stb);
         }
 
-        private static List<Node> GenerateSolutionPath(List<Node> closed, Node finalState)
+        private static List<Node> GenerateSolutionPath(List<Node> close, Node finalState)
         {
             List<Node> solution = new List<Node>();
 
@@ -149,7 +147,7 @@ namespace _15PuzzleHeuristicSolver
             {
                 tmp = ApplyReverseOperator(tmp.appliedOp, tmp);
                 solution.Add(tmp);
-                tmp = closed.First(n => n.Equals(tmp));
+                tmp = close.First(n => n.Equals(tmp));
             }
 
             //reverse the backwards path
@@ -347,6 +345,17 @@ namespace _15PuzzleHeuristicSolver
             }
             bool b = Enumerable.SequenceEqual(this.state, n.state);
             return b;
+        }
+
+        public override int GetHashCode()
+        {
+            StringBuilder stb = new StringBuilder();
+            foreach (int tile in state)
+            {
+                stb.Append(tile);
+                stb.Append(' ');
+            }
+            return stb.ToString().GetHashCode();
         }
     }
 }
