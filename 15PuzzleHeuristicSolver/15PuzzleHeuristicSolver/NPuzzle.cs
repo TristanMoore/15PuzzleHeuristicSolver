@@ -9,7 +9,7 @@ namespace _15PuzzleHeuristicSolver
     public class NPuzzle
     {
         public const int BLANKVAL = -1;
-        public readonly Node goalState; //starting at 1
+        public readonly Node goalState;
         public readonly Node initialState;
         public List<Node> solution;
         private Stopwatch calcStopwatch = new Stopwatch();
@@ -343,6 +343,7 @@ namespace _15PuzzleHeuristicSolver
         }
     }
 
+    //allows duplicates. Used to pick the 'best' n in open.
     public class DuplicateKeyComparer<TKey> : IComparer<TKey> where TKey : IComparable
     {
         public int Compare(TKey x, TKey y)
