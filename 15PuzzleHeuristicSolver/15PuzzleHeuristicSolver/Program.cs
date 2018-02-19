@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace _15PuzzleHeuristicSolver
 {
@@ -32,49 +29,4 @@ namespace _15PuzzleHeuristicSolver
             Console.ReadLine();
         }
     }
-
-    //public class Node
-    //{
-    //    public int[] state;
-    //    public Puzzle.Operator backPtr;
-    //    public int hVal;
-
-    //    public Node(int[] boardArr, int inversionCt)
-    //    {
-    //        state = boardArr;
-    //        hVal = inversionCt;
-    //    }
-
-    //    public override bool Equals(object obj)
-    //    {
-    //        Node n = obj as Node;
-    //        if (n == null)
-    //        {
-    //            return false;
-    //        }
-    //        bool b = Enumerable.SequenceEqual(this.state, n.state);
-    //        return b;
-    //    }
-
-    //    public override string ToString()
-    //    {
-    //        StringBuilder stb = new StringBuilder();
-    //        foreach (int tile in state)
-    //        {
-    //            stb.Append(tile);
-    //            stb.Append(' ');
-    //        }
-    //        return stb.ToString();
-    //    }
-
-    //    public override int GetHashCode()
-    //    {
-    //        return this.ToString().GetHashCode();
-    //    }
-
-    //    public Node Copy()
-    //    {
-    //        return new Node((int[])state.Clone(), hVal);
-    //    }
-    //}
 }

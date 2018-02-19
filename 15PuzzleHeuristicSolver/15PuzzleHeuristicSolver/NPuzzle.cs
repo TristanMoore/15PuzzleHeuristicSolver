@@ -8,16 +8,11 @@ namespace _15PuzzleHeuristicSolver
 {
     public class NPuzzle
     {
-        //useful objects
         public const int BLANKVAL = -1;
-
         public readonly Node goalState; //starting at 1
         public readonly Node initialState;
         public List<Node> solution;
-
-        //informational objects
         private Stopwatch calcStopwatch = new Stopwatch();
-
         private int openCount = 0;
         private int closeCount = 0;
 
@@ -39,17 +34,15 @@ namespace _15PuzzleHeuristicSolver
         {
             Dictionary<Node, int> openHash = new Dictionary<Node, int>();
             HashSet<Node> closeHash = new HashSet<Node>();
-            List<Node> open = new List<Node>();
-            //List<Node> close = new List<Node>();
+            SortedList<int, Node> open = new SortedList<int, Node>(new DuplicateKeyComparer<int>());
             Node best;
-            int bestIndex;
 
             //0. start the timer
             calcStopwatch.Reset();
             calcStopwatch.Start();
 
             //1. put IS on open
-            open.Add(initialState);
+            open.Add(initialState.HVal, initialState);
             openHash.Add(initialState, initialState.HVal);
 
             while (true)
@@ -64,18 +57,9 @@ namespace _15PuzzleHeuristicSolver
                 }
 
                 //pick out best from open and put on close
-                best = open.First();
-                bestIndex = 0;
-                for (int i = 0; i < open.Count(); i++)
-                {
-                    if (open[i].HVal < best.HVal)
-                    {
-                        best = open[i];
-                        bestIndex = i;
-                    }
-                }
+                best = open.First().Value;
                 openHash.Remove(best);
-                open.RemoveAt(bestIndex);
+                open.RemoveAt(0);
                 closeHash.Add(best);
 
                 //3. expand n
@@ -94,7 +78,7 @@ namespace _15PuzzleHeuristicSolver
 
                     if (!closeHash.Contains(successor) && !openHash.ContainsKey(successor))
                     {
-                        open.Add(successor);
+                        open.Add(successor.HVal, successor);
                         openHash.Add(successor, successor.HVal);
                     }
                 }
@@ -356,6 +340,22 @@ namespace _15PuzzleHeuristicSolver
                 stb.Append(' ');
             }
             return stb.ToString().GetHashCode();
+        }
+    }
+
+    public class DuplicateKeyComparer<TKey> : IComparer<TKey> where TKey : IComparable
+    {
+        public int Compare(TKey x, TKey y)
+        {
+            int result = x.CompareTo(y);
+            if (result == 0)
+            {
+                return 1; //Handle equality as being greater
+            }
+            else
+            {
+                return result;
+            }
         }
     }
 }
