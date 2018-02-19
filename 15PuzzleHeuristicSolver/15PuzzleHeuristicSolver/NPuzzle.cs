@@ -30,7 +30,7 @@ namespace _15PuzzleHeuristicSolver
             goalState.state[goalState.state.Length - 1] = BLANKVAL;
         }
 
-        public List<Node> SolveWithBestFirst()
+        public List<Node> SolveWithAStar(int stepCost)
         {
             Dictionary<Node, int> openHash = new Dictionary<Node, int>();
             HashSet<Node> closeHash = new HashSet<Node>();
@@ -65,7 +65,7 @@ namespace _15PuzzleHeuristicSolver
                 //3. expand n
                 foreach (Operator op in GetValidOperators(best))
                 {
-                    Node successor = ApplyOperator(op, best);
+                    Node successor = ApplyOperator(op, best, stepCost);
                     if (successor.Equals(goalState))
                     {
                         //4. if successor is goal, output solution
@@ -129,7 +129,7 @@ namespace _15PuzzleHeuristicSolver
             Node tmp = finalState;
             while (tmp.appliedOp != Operator.Root)
             {
-                tmp = ApplyReverseOperator(tmp.appliedOp, tmp);
+                tmp = ApplyReverseOperator(tmp.appliedOp, tmp, 0);
                 solution.Add(tmp);
                 tmp = close.First(n => n.Equals(tmp));
             }
@@ -167,12 +167,12 @@ namespace _15PuzzleHeuristicSolver
             }
         }
 
-        private static Node ApplyReverseOperator(Operator op, Node n)
+        private static Node ApplyReverseOperator(Operator op, Node n, int stepCost)
         {
-            return ApplyOperator(ReverseOperator(op), n);
+            return ApplyOperator(ReverseOperator(op), n, stepCost);
         }
 
-        private static Node ApplyOperator(Operator op, Node n) //assumes operation is valid
+        private static Node ApplyOperator(Operator op, Node n, int stepCost) //assumes operation is valid
         {
             int blankIndex = FindBlankIndex(n);
             int[] tmp = new int[n.state.Length];
@@ -204,7 +204,7 @@ namespace _15PuzzleHeuristicSolver
                     break;
             }
 
-            return new Node(tmp, n.rows, n.columns, n.distance + 1, op);
+            return new Node(tmp, n.rows, n.columns, n.distance + stepCost, op);
         }
 
         private static List<Operator> GetValidOperators(Node n)
